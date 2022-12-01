@@ -45,7 +45,9 @@ class Bank():
         self.reserves           = CurrencyReserves()
         self.operating          = False
         self.accounts           = []
+        self.number_of_accounts = len(self.accounts)
         self.transaction_queue  = []
+        self.released_operations = 0
 
 
     def new_account(self, balance: int = 0, overdraft_limit: int = 0) -> None:
@@ -63,7 +65,21 @@ class Bank():
   
         # Adiciona a Account criada na lista de contas do banco
         self.accounts.append(acc)
+        self.number_of_accounts += 1 #incrementa contador de contas no banco
 
+    def new_transfer(self, origin: Tuple[int, int], destination: Tuple[int, int], amount: int, currency: Currency) -> None:
+        #cria nova transação -> _ids correspondentes às posições da transação no array
+        new_transaction = Transaction(len(self.transaction_queue), origin, destination, amount, currency)
+        #insere transação na fila de transções -> não é necessário utilizar uma classe Queue, uma vez que o comportamento de uma fila pode ser reproduzido com append() e pop(0)
+        self.transaction_queue.append(new_transaction)
+
+    def get_all_acounts_balance(self, accounts):
+        sum = 0
+        for account in self.accounts:
+            account_balance = account.balance
+            sum += account_balance
+
+        return sum
 
     def info(self) -> None:
         """
@@ -77,4 +93,4 @@ class Bank():
         # TODO: IMPLEMENTE AS MODIFICAÇÕES, SE NECESSÁRIAS, NESTE MÉTODO!
 
         LOGGER.info(f"Estatísticas do Banco Nacional {self._id}:")
-        LOGGER.info(f"...")
+        LOGGER.info(f"Saldos:\n -> USD: {self.currency.USD},\n -> EUR: {self.currency.EUR},\n -> GBP: {self.currency.GBP},\n -> JPY: {self.currency.JPY},\n -> CHF: {self.currency.CHF},\n -> BRL: {self.currency.BRL}\n Transferências realizadas: {self.released_operations}\nContas registradas: {self.number_of_accounts}\n Saldo total dos clientes: {self.get_all_acounts_balance(self.accounts)}\n Lucro acumulado: IMPLEMENTAR!!!")
