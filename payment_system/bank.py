@@ -45,9 +45,10 @@ class Bank():
         self.reserves           = CurrencyReserves()
         self.operating          = False
         self.accounts           = []
-        self.number_of_accounts = len(self.accounts)
+        self.number_of_accounts = len(self.accounts) #contagem de contas registradas no banco
         self.transaction_queue  = []
-        self.released_operations = 0
+        self.released_operations = 0 #contagem de operações realizadas pelo banco
+        self.total_profit = 0 #lucro acumulado pelo banco
 
 
     def new_account(self, balance: int = 0, overdraft_limit: int = 0) -> None:
@@ -81,6 +82,9 @@ class Bank():
 
         return sum
 
+    def get_total_profit(self):
+        return self.total_profit
+
     def info(self) -> None:
         """
         Essa função deverá printar os seguintes dados utilizando o LOGGER fornecido:
@@ -93,4 +97,4 @@ class Bank():
         # TODO: IMPLEMENTE AS MODIFICAÇÕES, SE NECESSÁRIAS, NESTE MÉTODO!
 
         LOGGER.info(f"Estatísticas do Banco Nacional {self._id}:")
-        LOGGER.info(f"Saldos:\n -> USD: {self.currency.USD},\n -> EUR: {self.currency.EUR},\n -> GBP: {self.currency.GBP},\n -> JPY: {self.currency.JPY},\n -> CHF: {self.currency.CHF},\n -> BRL: {self.currency.BRL}\n Transferências realizadas: {self.released_operations}\nContas registradas: {self.number_of_accounts}\n Saldo total dos clientes: {self.get_all_acounts_balance(self.accounts)}\n Lucro acumulado: IMPLEMENTAR!!!")
+        LOGGER.info(f"Saldos:\n -> USD: {self.currency.USD},\n -> EUR: {self.currency.EUR},\n -> GBP: {self.currency.GBP},\n -> JPY: {self.currency.JPY},\n -> CHF: {self.currency.CHF},\n -> BRL: {self.currency.BRL}\n Transferências realizadas: {self.released_operations}\nContas registradas: {self.number_of_accounts}\n Saldo total dos clientes: {self.get_all_acounts_balance(self.accounts)}\n Lucro acumulado: {self.get_total_profit()}")
