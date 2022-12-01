@@ -8,7 +8,6 @@ from payment_system.payment_processor import PaymentProcessor
 from payment_system.transaction_generator import TransactionGenerator
 from utils.currency import Currency
 from utils.logger import CH, LOGGER
-#testandooooooo
 
 if __name__ == "__main__":
     # Verificação de compatibilidade da versão do python:

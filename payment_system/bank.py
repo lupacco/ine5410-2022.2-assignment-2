@@ -69,10 +69,36 @@ class Bank():
         self.number_of_accounts += 1 #incrementa contador de contas no banco
 
     def new_transfer(self, origin: Tuple[int, int], destination: Tuple[int, int], amount: int, currency: Currency) -> None:
-        #cria nova transação -> _ids correspondentes às posições da transação no array
-        new_transaction = Transaction(len(self.transaction_queue), origin, destination, amount, currency)
-        #insere transação na fila de transções -> não é necessário utilizar uma classe Queue, uma vez que o comportamento de uma fila pode ser reproduzido com append() e pop(0)
-        self.transaction_queue.append(new_transaction)
+        # identificador da conta origem -> origin[1]
+        origin_account = self.accounts[origin[1]]
+        # identificador da conta destino -> destination[1]
+        destination_account = self.accounts[destination[1]]
+        #identificador de banco origem -> origin[0]
+        origin_bank_id = origin[0]
+        #identificador de banco destion -> destination[0]
+        destination_bank_id = destination[0]
+
+        #TRANSFERIR LÓGICA PARA PAYMENT_PROCESSOR
+        #Em caso de ser uma transferência nacional
+        if(origin_bank_id == destination_bank_id):
+            #se for possível fazer a transferência/saque
+            if(origin_account.withdraw(amount)):
+                origin_account.balance -= amount
+                destination_account.balance += amount
+        else:
+            #se for possível fazer a transferência/saque
+            if(origin_account.withdraw(amount)):
+                #definir uma taxa de transação
+                transfer_tax = amount*0.05
+                origin_account.balance -= (amount  + transfer_tax)
+                #Incrementa lucro total do banco
+                self.total_profit += transfer_tax
+                #resgata conta especial interna do banco
+                bank_account = self.reserves.currency
+                #currency do banco destino
+                
+
+        
 
     def get_all_acounts_balance(self, accounts):
         sum = 0
