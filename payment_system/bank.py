@@ -69,45 +69,6 @@ class Bank():
         # Adiciona a Account criada na lista de contas do banco
         self.accounts.append(acc)
         self.number_of_accounts += 1 #incrementa contador de contas no banco
-
-    def new_transfer(self, origin: Tuple[int, int], destination: Tuple[int, int], amount: int, currency: Currency) -> None:
-        # identificador da conta origem -> origin[1]
-        origin_account = self.accounts[origin[1]]
-        # identificador da conta destino -> destination[1]
-        #identificador de banco origem -> origin[0]
-        origin_bank_id = origin[0]
-        #identificador de banco destion -> destination[0]
-        destination_bank_id = destination[0]
-
-        #Em caso de ser uma transferência nacional
-        if(origin_bank_id == destination_bank_id):
-            #se for possível fazer a transferência/saque
-            if(origin_account.withdraw(amount)[0]):
-                #resgata conta destino
-                destination_account = self.accounts[destination[1]]
-                destination_account.deposit(amount)             
-        else:
-            #se for possível fazer a transferência/saque
-            results_of_withdraw = origin_account.withdraw(amount)[0]
-            if(results_of_withdraw[0]):
-                #definir uma taxa de transação
-                if(results_of_withdraw[1] == "normal"):
-                    transfer_tax = amount*0.01
-                if(results_of_withdraw[1] == "overdrafted"):
-                    transfer_tax = amount*0.06
-                origin_account.balance -= (amount  + transfer_tax)
-                #Incrementa lucro total do banco
-                self.total_profit += transfer_tax
-                #resgata conta especial interna do banco
-                bank_account = self.reserves.currency
-                #resgata conta especial do banco destino que receberá o dinheiro convertido
-
-                #transfere para a conta do banco destino
-
-                #converte o dinheiro na conta destino
-
-
-                #transfere pra conta destino
                 
 
         
