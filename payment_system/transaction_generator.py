@@ -50,8 +50,8 @@ class TransactionGenerator(Thread):
         while operating:
             origin = (self.bank._id, self._id)
             destination_bank = randint(0, 5)
-            destination = (destination_bank, randint(0, 100))
-            amount = randint(100, 1000000)
+            destination = (destination_bank, randint(0, 1_00))
+            amount = randint(1_00, 10_000_00)
             new_transaction = Transaction(i, origin, destination, amount, currency=Currency(destination_bank+1))
             banks[self.bank._id].transaction_queue.append(new_transaction)
             i=+1

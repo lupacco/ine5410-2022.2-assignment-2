@@ -77,13 +77,13 @@ class Account:
         if self.balance >= amount:
             self.balance -= amount
             LOGGER.info(f"withdraw({amount}) successful!")
-            return True
+            return True, "normal"
         else:
             overdrafted_amount = abs(self.balance - amount)
             if self.overdraft_limit >= overdrafted_amount:
                 self.balance -= amount
                 LOGGER.info(f"withdraw({amount}) successful with overdraft!")
-                return True
+                return True, "overdrafted"
             else:
                 LOGGER.warning(f"withdraw({amount}) failed, no balance!")
                 return False

@@ -60,6 +60,11 @@ if __name__ == "__main__":
         # Adiciona banco na lista global de bancos
         banks.append(bank)
 
+    #Inicializa contas dos bancos
+    for bank in banks:
+        for i in range(99):
+            bank.accounts.append(bank.new_account(randint(100_00, 100_000_00), randint(0, 50_000_00)))
+
     # Inicializa gerador de transações e processadores de pagamentos para os Bancos Nacionais:
     for i, bank in enumerate(banks):
         # Inicializa um TransactionGenerator thread por banco:

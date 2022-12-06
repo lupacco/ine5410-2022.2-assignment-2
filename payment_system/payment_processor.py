@@ -48,7 +48,7 @@ class PaymentProcessor(Thread):
 
         while True:
             try:
-                transaction = queue.pop()
+                transaction = queue.pop(0)
                 LOGGER.info(f"Transaction_queue do Banco {self.bank._id}: {queue}")
             except Exception as err:
                 LOGGER.error(f"Falha em PaymentProcessor.run(): {err}")
@@ -68,6 +68,10 @@ class PaymentProcessor(Thread):
         Ela deve retornar o status da transacão processada.
         """
         # TODO: IMPLEMENTE/MODIFIQUE O CÓDIGO NECESSÁRIO ABAIXO !
+
+
+        
+        
 
         LOGGER.info(f"PaymentProcessor {self._id} do Banco {self.bank._id} iniciando processamento da Transaction {transaction._id}!")
         

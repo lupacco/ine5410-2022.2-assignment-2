@@ -1,5 +1,7 @@
 from typing import Tuple
 
+from globals import banks
+
 from payment_system.account import Account, CurrencyReserves
 from utils.transaction import Transaction
 from utils.currency import Currency
@@ -72,30 +74,40 @@ class Bank():
         # identificador da conta origem -> origin[1]
         origin_account = self.accounts[origin[1]]
         # identificador da conta destino -> destination[1]
-        destination_account = self.accounts[destination[1]]
         #identificador de banco origem -> origin[0]
         origin_bank_id = origin[0]
         #identificador de banco destion -> destination[0]
         destination_bank_id = destination[0]
 
-        #TRANSFERIR LÓGICA PARA PAYMENT_PROCESSOR
         #Em caso de ser uma transferência nacional
         if(origin_bank_id == destination_bank_id):
             #se for possível fazer a transferência/saque
-            if(origin_account.withdraw(amount)):
-                origin_account.balance -= amount
-                destination_account.balance += amount
+            if(origin_account.withdraw(amount)[0]):
+                #resgata conta destino
+                destination_account = self.accounts[destination[1]]
+                destination_account.deposit(amount)             
         else:
             #se for possível fazer a transferência/saque
-            if(origin_account.withdraw(amount)):
+            results_of_withdraw = origin_account.withdraw(amount)[0]
+            if(results_of_withdraw[0]):
                 #definir uma taxa de transação
-                transfer_tax = amount*0.05
+                if(results_of_withdraw[1] == "normal"):
+                    transfer_tax = amount*0.01
+                if(results_of_withdraw[1] == "overdrafted"):
+                    transfer_tax = amount*0.06
                 origin_account.balance -= (amount  + transfer_tax)
                 #Incrementa lucro total do banco
                 self.total_profit += transfer_tax
                 #resgata conta especial interna do banco
                 bank_account = self.reserves.currency
-                #currency do banco destino
+                #resgata conta especial do banco destino que receberá o dinheiro convertido
+
+                #transfere para a conta do banco destino
+
+                #converte o dinheiro na conta destino
+
+
+                #transfere pra conta destino
                 
 
         
@@ -123,4 +135,4 @@ class Bank():
         # TODO: IMPLEMENTE AS MODIFICAÇÕES, SE NECESSÁRIAS, NESTE MÉTODO!
 
         LOGGER.info(f"Estatísticas do Banco Nacional {self._id}:")
-        LOGGER.info(f"Saldos:\n -> USD: {self.currency.USD},\n -> EUR: {self.currency.EUR},\n -> GBP: {self.currency.GBP},\n -> JPY: {self.currency.JPY},\n -> CHF: {self.currency.CHF},\n -> BRL: {self.currency.BRL}\n Transferências realizadas: {self.released_operations}\nContas registradas: {self.number_of_accounts}\n Saldo total dos clientes: {self.get_all_acounts_balance(self.accounts)}\n Lucro acumulado: {self.get_total_profit()}")
+        LOGGER.info(f"Saldos:\n -> USD: {self.reserves.USD.balance},\n -> EUR: {self.reserves.EUR.balance},\n -> GBP: {self.reserves.GBP.balance},\n -> JPY: {self.reserves.JPY.balance},\n -> CHF: {self.reserves.CHF.balance},\n -> BRL: {self.reserves.BRL.balance}\n Transferências realizadas: {self.released_operations}\nContas registradas: {self.number_of_accounts}\n Saldo total dos clientes: {self.get_all_acounts_balance(self.accounts)}\n Lucro acumulado: {self.get_total_profit()}")
