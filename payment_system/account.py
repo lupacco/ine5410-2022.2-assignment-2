@@ -80,7 +80,9 @@ class Account:
             return True, "normal"
         else:
             overdrafted_amount = abs(self.balance - amount)
-            if self.overdraft_limit >= overdrafted_amount:
+            #taxa cobrada pelo banco
+            bank_tax = amount*0.05
+            if self.overdraft_limit >= (overdrafted_amount + bank_tax):
                 self.balance -= amount
                 LOGGER.info(f"withdraw({amount}) successful with overdraft!")
                 return True, "overdrafted"

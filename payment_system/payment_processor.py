@@ -2,6 +2,7 @@ import time
 from threading import Thread
 
 from typing import Tuple
+from globals import banks
 
 from globals import *
 from payment_system.bank import Bank
@@ -63,43 +64,60 @@ class PaymentProcessor(Thread):
         LOGGER.info(f"O PaymentProcessor {self._id} do banco {self._bank_id} foi finalizado.")
 
     def new_transfer(self, origin: Tuple[int, int], destination: Tuple[int, int], amount: int, currency: Currency) -> None:
-        # identificador da conta origem -> origin[1]
-        origin_account = self.accounts[origin[1]]
-        # identificador da conta destino -> destination[1]
         #identificador de banco origem -> origin[0]
         origin_bank_id = origin[0]
         #identificador de banco destion -> destination[0]
         destination_bank_id = destination[0]
+        # identificador da conta origem -> origin[1]
+        origin_account = banks[origin_bank_id].accounts[origin[1]]
+        #resgata conta destino
+        destination_account = banks[destination_bank_id].accounts[destination[1]]
 
-        #Em caso de ser uma transferência nacional
-        if(origin_bank_id == destination_bank_id):
-            #se for possível fazer a transferência/saque
-            if(origin_account.withdraw(amount)[0]):
-                #resgata conta destino
-                destination_account = self.accounts[destination[1]]
-                destination_account.deposit(amount)             
-        else:
-            #se for possível fazer a transferência/saque
-            results_of_withdraw = origin_account.withdraw(amount)[0]
-            if(results_of_withdraw[0]):
-                #definir uma taxa de transação
-                if(results_of_withdraw[1] == "normal"):
-                    transfer_tax = amount*0.01
-                if(results_of_withdraw[1] == "overdrafted"):
-                    transfer_tax = amount*0.06
-                origin_account.balance -= (amount  + transfer_tax)
-                #Incrementa lucro total do banco
-                self.total_profit += transfer_tax
-                #resgata conta especial interna do banco
-                bank_account = self.reserves.currency
-                #resgata conta especial do banco destino que receberá o dinheiro convertido
+        #se for possível fazer a transferência/saque
+        withdraw_requisition = origin_account.withdraw(amount)
+        print(withdraw_requisition)
 
-                #transfere para a conta do banco destino
+        if(withdraw_requisition[0]):
+            #Em caso de ser uma transferência Nacional
+            if(origin_bank_id == destination_bank_id):
+                    #se for com cheque especial
+                    if(withdraw_requisition[1] == "overdrafted"):
+                        #taxa cobrada pelo banco
+                        bank_tax = amount*0.05
+                        #cobrança da taxa destino (retirado da conta origem)
+                        origin_account.withdraw(bank_tax)
+                        origin_bank = banks[origin_bank_id]
+                        #incremento dos lucros acumulados do banco
+                        origin_bank.total_profit += bank_tax
+                        #deposito da taxa na conta do banco
+                        origin_bank.reserves.currency.deposit(bank_tax)
+                    #deposita quantia na conta destino
+                    destination_account.deposit(amount)
+            #Em caso de transferência Internacional
+            else:
+                bank_tax = amount*0.01
+                if(withdraw_requisition[1] == "overdrafted"):
+                    bank_tax = amount*0.06
+                    origin_account.withdraw(bank_tax)
+                #deposita na conta especial da currency origem
+                origin_bank = banks[origin_bank_id]
+                origin_bank.total_profit += bank_tax
+                origin_bank.reserves.currency.deposit(amount + bank_tax)
+                #converte quantia
+                destination_currency = destination_account.currency
+                converted_amount = currency.get_exchange_rate(currency, destination_currency)*amount
+                #faz o saque na conta especial da currency destino
+                origin_bank.reserves.destination_currency.withdraw(converted_amount)
+                
+                #depositando na conta destino
+                destination_account.deposit(converted_amount)
+            #incrementa operações realizadas pelo banco
+            origin_bank.released_operations += 1
 
-                #converte o dinheiro na conta destino
 
-
-                #transfere pra conta destino
+                
+                
+        
 
     def process_transaction(self, transaction: Transaction) -> TransactionStatus:
         """
