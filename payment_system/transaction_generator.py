@@ -53,7 +53,7 @@ class TransactionGenerator(Thread):
             amount = randint(1_00, 10_000_00)
             new_transaction = Transaction(i, origin, destination, amount, currency=Currency(destination_bank+1))
             banks[self.bank._id].transaction_queue.append(new_transaction)
-            i=+1
+            i+=1
             time.sleep(0.2 * time_unit)
 
         LOGGER.info(f"O TransactionGenerator {self._id} do banco {self.bank._id} foi finalizado.")
