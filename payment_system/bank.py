@@ -91,6 +91,16 @@ class Bank():
         5. Lucro do banco: taxas de câmbio acumuladas + juros de cheque especial acumulados
         """
         # TODO: IMPLEMENTE AS MODIFICAÇÕES, SE NECESSÁRIAS, NESTE MÉTODO!
-
-        LOGGER.info(f"Estatísticas do Banco Nacional {self._id}:")
-        LOGGER.info(f"Saldos:\n -> USD: {self.reserves.USD.balance},\n -> EUR: {self.reserves.EUR.balance},\n -> GBP: {self.reserves.GBP.balance},\n -> JPY: {self.reserves.JPY.balance},\n -> CHF: {self.reserves.CHF.balance},\n -> BRL: {self.reserves.BRL.balance}\n Transferências realizadas: {self.released_operations}\nContas registradas: {self.number_of_accounts}\n Saldo total dos clientes: {self.get_all_acounts_balance(self.accounts)}\n Lucro acumulado: {self.get_total_profit()}")
+        info_message = f"Estatísticas do Banco Nacional {self._id}:\n" \
+                       f"Saldos:\n" \
+                       f" -> USD: {self.reserves.USD.balance},\n" \
+                       f" -> EUR: {self.reserves.EUR.balance},\n" \
+                       f" -> GBP: {self.reserves.GBP.balance},\n" \
+                       f" -> JPY: {self.reserves.JPY.balance},\n" \
+                       f" -> CHF: {self.reserves.CHF.balance},\n" \
+                       f" -> BRL: {self.reserves.BRL.balance}\n" \
+                       f"Transferências realizadas: {self.released_operations}\n" \
+                       f"Contas registradas: {self.number_of_accounts}\n" \
+                       f"Saldo total dos clientes: {self.get_all_acounts_balance(self.accounts)}\n" \
+                       f"Lucro acumulado: {self.get_total_profit()}"         
+        LOGGER.info(info_message)
