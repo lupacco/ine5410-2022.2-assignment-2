@@ -47,7 +47,7 @@ class Bank():
         self.reserves           = CurrencyReserves()
         self.operating          = False
         self.accounts           = []
-        self.number_of_accounts = len(self.accounts) #contagem de contas registradas no banco
+        self.number_of_accounts = 0 #contagem de contas registradas no banco
         self.transaction_queue  = []
         self.released_operations = 0 #contagem de operações realizadas pelo banco
         self.total_profit = 0 #lucro acumulado pelo banco
@@ -61,17 +61,14 @@ class Bank():
         # TODO: IMPLEMENTE AS MODIFICAÇÕES, SE NECESSÁRIAS, NESTE MÉTODO!
 
         # Gera _id para a nova Account
-        acc_id = len(self.accounts) + 1
+        self.number_of_accounts += 1 #incrementa contador de contas no banco
+        acc_id = self.number_of_accounts
 
         # Cria instância da classe Account
         acc = Account(_id=acc_id, _bank_id=self._id, currency=self.currency, balance=balance, overdraft_limit=overdraft_limit)
   
         # Adiciona a Account criada na lista de contas do banco
         self.accounts.append(acc)
-        self.number_of_accounts += 1 #incrementa contador de contas no banco
-                
-
-        
 
     def get_all_acounts_balance(self, accounts):
         sum = 0
