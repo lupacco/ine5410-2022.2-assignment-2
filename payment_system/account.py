@@ -3,6 +3,7 @@ from typing import Tuple
 
 from utils.currency import Currency
 from utils.logger import LOGGER
+from threading import Lock
 
 
 @dataclass
@@ -35,12 +36,13 @@ class Account:
     withdraw(amount: int) -> None:
         Remove o valor `amount` do saldo da conta bancária.
     """
-
-    _id: int
-    _bank_id: int
-    currency: Currency
-    balance: int = 0
-    overdraft_limit: int = 0
+    def __init__(self, _id: int, _bank_id: int, currency: Currency, balance: int = 0, overdraft_limit: int = 0) -> None:
+        self._id = _id
+        self._bank_id = _bank_id
+        self.currency = currency
+        self.balance = balance
+        self.overdraft_limit = overdraft_limit
+        self.lock = Lock()
 
     def info(self) -> None:
         """
@@ -60,7 +62,8 @@ class Account:
         """
         # TODO: IMPLEMENTE AS MODIFICAÇÕES NECESSÁRIAS NESTE MÉTODO !
 
-        self.balance += amount
+        with self.lock:
+            self.balance += amount
         LOGGER.info(f"deposit({amount}) successful!")
         return True
 
@@ -73,8 +76,10 @@ class Account:
         """
         # TODO: IMPLEMENTE AS MODIFICAÇÕES NECESSÁRIAS NESTE MÉTODO !
 
+        self.lock.acquire()
         if self.balance >= amount:
             self.balance -= amount
+            self.lock.release()
             LOGGER.info(f"withdraw({amount}) successful!")
             return (True, False)
         else:
@@ -82,9 +87,11 @@ class Account:
             bank_tax = overdrafted_amount * 0.05
             if self.overdraft_limit >= overdrafted_amount:
                 self.balance -= amount + bank_tax
+                self.lock.release()
                 LOGGER.info(f"withdraw({amount}) successful with overdraft!")
                 return (True, True)
             else:
+                self.lock.release()
                 LOGGER.warning(f"withdraw({amount}) failed, no balance!")
                 return (False, False)
 
