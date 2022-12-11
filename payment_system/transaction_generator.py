@@ -47,7 +47,7 @@ class TransactionGenerator(Thread):
         self.bank.operating = True
         i = 0
         while self.bank.operating:
-            origin = (self.bank._id, self._id)
+            origin = (self.bank._id, randint(0, 1_00))
             destination_bank = randint(0, 5)
             destination = (destination_bank, randint(0, 1_00))
             amount = randint(1_00, 10_000_00)

@@ -75,7 +75,7 @@ class Bank():
         self.accounts.append(acc)
         self.number_of_accounts += 1
         
-    def deposit_to_reserve(self, currency: Currency, amount: float) -> None:
+    def deposit_to_reserve(self, currency: Currency, amount: int) -> None:
         if currency == Currency.USD:
             self.reserves.USD.deposit(amount)
         elif currency == Currency.EUR:
@@ -89,7 +89,7 @@ class Bank():
         else:
             self.reserves.BRL.deposit(amount)
 
-    def withdraw_from_reserve(self, currency: Currency, amount: float) -> None:
+    def withdraw_from_reserve(self, currency: Currency, amount: int) -> None:
         if currency == Currency.USD:
             self.reserves.USD.withdraw(amount)
         elif currency == Currency.EUR:

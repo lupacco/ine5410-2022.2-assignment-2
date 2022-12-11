@@ -84,7 +84,7 @@ class Account:
             return (True, False)
         else:
             overdrafted_amount = abs(self.balance - amount)
-            bank_tax = overdrafted_amount * 0.05
+            bank_tax = int(overdrafted_amount * 0.05)
             if self.overdraft_limit >= overdrafted_amount:
                 self.balance -= amount + bank_tax
                 self.lock.release()

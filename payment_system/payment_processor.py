@@ -61,8 +61,6 @@ class PaymentProcessor(Thread):
                 LOGGER.error(f"Falha em PaymentProcessor.run(): {err}")
             else:
                 self.process_transaction(transaction)
-            #time.sleep(3 * time_unit)  # Remova esse sleep após implementar sua solução!
-
         LOGGER.info(f"O PaymentProcessor {self._id} do banco {self._bank_id} foi finalizado.")
 
     def transfer(self, origin: Tuple[int, int], destination: Tuple[int, int], amount: int) -> bool:
@@ -85,13 +83,13 @@ class PaymentProcessor(Thread):
         # Define as currencies
         origin_currency = origin_bank.currency
         destination_currency = destination_bank.currency
-
+        
         #Em caso de ser uma transferência Nacional
         if(origin_bank_id == destination_bank_id):
             successful_transaction, special_check_transaction = origin_account.withdraw(amount)
             if successful_transaction:
                 if special_check_transaction:
-                    bank_tax = amount * 0.05
+                    bank_tax = int(amount * 0.05)
                     origin_bank.total_profit += bank_tax
                     origin_bank.deposit_to_reserve(origin_currency, bank_tax)
                     
@@ -106,13 +104,13 @@ class PaymentProcessor(Thread):
         #Em caso de transferência Internacional
         else:          
             # Withdraw da origem
-            local_currency_amount = 1.01 * amount * get_exchange_rate(origin_bank.currency, destination_bank.currency)
+            local_currency_amount = int(1.01 * amount * get_exchange_rate(destination_bank.currency, origin_bank.currency))
             successful_transaction, special_check_transaction = origin_account.withdraw(local_currency_amount)
             
             if successful_transaction:
                 # Deposito na conta do banco da moeda origem
                 if special_check_transaction:
-                    bank_tax = local_currency_amount * 0.05
+                    bank_tax = int(local_currency_amount * 0.05)
                     origin_bank.total_profit += bank_tax
                     origin_bank.deposit_to_reserve(origin_currency, local_currency_amount + bank_tax)
                 else:
@@ -141,7 +139,6 @@ class PaymentProcessor(Thread):
 
         LOGGER.info(f"PaymentProcessor {self._id} do Banco {self.bank._id} iniciando processamento da Transaction {transaction._id}!")
         
-        # LOGGER.info(f"CURRENCY: {transaction.currency.value}.")
         successful_transfer = self.transfer(transaction.origin, transaction.destination, transaction.amount)
         
         # NÃO REMOVA ESSE SLEEP!
