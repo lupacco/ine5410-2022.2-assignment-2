@@ -63,7 +63,7 @@ class PaymentProcessor(Thread):
 
         LOGGER.info(f"O PaymentProcessor {self._id} do banco {self._bank_id} foi finalizado.")
 
-    def new_transfer(self, origin: Tuple[int, int], destination: Tuple[int, int], amount: int) -> None:
+    def transfer(self, origin: Tuple[int, int], destination: Tuple[int, int], amount: int) -> bool:
         # Get banks id
         origin_bank_id = origin[0]
         destination_bank_id = destination[0]
@@ -97,6 +97,9 @@ class PaymentProcessor(Thread):
                 destination_account.deposit(amount)
                 
                 origin_bank.released_operations += 1
+                return True
+            else:
+                return False
         
         #Em caso de transferência Internacional
         else:          
@@ -120,6 +123,9 @@ class PaymentProcessor(Thread):
                 destination_account.deposit(amount)
                 
                 origin_bank.released_operations += 1
+                return True
+            else:
+                return False
             
     def process_transaction(self, transaction: Transaction) -> TransactionStatus:
         """
@@ -134,11 +140,14 @@ class PaymentProcessor(Thread):
         LOGGER.info(f"PaymentProcessor {self._id} do Banco {self.bank._id} iniciando processamento da Transaction {transaction._id}!")
         
         # LOGGER.info(f"CURRENCY: {transaction.currency.value}.")
-        self.new_transfer(transaction.origin, transaction.destination, transaction.amount)
+        successful_transfer = self.transfer(transaction.origin, transaction.destination, transaction.amount)
         
         # NÃO REMOVA ESSE SLEEP!
         # Ele simula uma latência de processamento para a transação.
         time.sleep(3 * time_unit)
-
-        transaction.set_status(TransactionStatus.SUCCESSFUL)
+        
+        if successful_transfer:
+            transaction.set_status(TransactionStatus.SUCCESSFUL)
+        else: 
+            transaction.set_status(TransactionStatus.FAILED)
         return transaction.status
