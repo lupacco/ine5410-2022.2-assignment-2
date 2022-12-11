@@ -50,18 +50,20 @@ class PaymentProcessor(Thread):
         LOGGER.info(f"Inicializado o PaymentProcessor {self._id} do Banco {self.bank._id}!")
         queue = banks[self.bank._id].transaction_queue
 
-        while True:
+        while self.bank.operating:
             try:
                 with banks[self.bank._id].queue_lock:
-                    while (len(queue) == 0):
-                        banks[self.bank._id].item_in_queue.wait() 
+                    while (len(queue) == 0 and self.bank.operating):
+                        banks[self.bank._id].item_in_queue.wait()
+                    if not self.bank.operating:
+                        break
                     transaction = queue.pop(0)
                 LOGGER.info(f"Transaction_queue do Banco {self.bank._id}: {queue}")
             except Exception as err:
                 LOGGER.error(f"Falha em PaymentProcessor.run(): {err}")
             else:
                 self.process_transaction(transaction)
-        LOGGER.info(f"O PaymentProcessor {self._id} do banco {self._bank_id} foi finalizado.")
+        LOGGER.info(f"O PaymentProcessor {self._id} do banco {self.bank._id} foi finalizado.")
 
     def transfer(self, origin: Tuple[int, int], destination: Tuple[int, int], amount: int) -> bool:
         # Get banks id

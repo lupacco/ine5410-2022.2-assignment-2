@@ -52,11 +52,14 @@ class TransactionGenerator(Thread):
             destination = (destination_bank, randint(0, 1_00))
             amount = randint(1_00, 10_000_00)
             new_transaction = Transaction(i, origin, destination, amount, currency=Currency(destination_bank+1))
-            with banks[self.bank._id].queue_lock:
-                banks[self.bank._id].transaction_queue.append(new_transaction)
-                banks[self.bank._id].item_in_queue.notify()
+            with self.bank.queue_lock:
+                self.bank.transaction_queue.append(new_transaction)
+                self.bank.item_in_queue.notify()
             i+=1
             time.sleep(0.2 * time_unit)
-
+            
+        with self.bank.queue_lock:
+            self.bank.item_in_queue.notify_all()
+        
         LOGGER.info(f"O TransactionGenerator {self._id} do banco {self.bank._id} foi finalizado.")
 
