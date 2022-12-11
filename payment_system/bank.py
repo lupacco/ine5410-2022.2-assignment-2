@@ -6,7 +6,7 @@ from payment_system.account import Account, CurrencyReserves
 from utils.transaction import Transaction
 from utils.currency import Currency
 from utils.logger import LOGGER
-from threading import Lock
+from threading import Lock, Condition
 
 
 class Bank():
@@ -52,6 +52,7 @@ class Bank():
         
         self.transaction_queue  = []
         self.queue_lock = Lock()
+        self.item_in_queue = Condition(self.queue_lock)
         
         self.released_operations = 0 #contagem de operações realizadas pelo banco
         self.total_profit = 0 #lucro acumulado pelo banco

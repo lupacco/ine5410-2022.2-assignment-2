@@ -66,13 +66,15 @@ if __name__ == "__main__":
             bank.new_account(randint(100_00, 100_000_00), randint(0, 50_000_00))
 
     # Inicializa gerador de transações e processadores de pagamentos para os Bancos Nacionais:
+    num_payment_processor = 20
     for i, bank in enumerate(banks):
         #if i > 0: break
         # Inicializa um TransactionGenerator thread por banco:
         TransactionGenerator(_id=i, bank=bank).start()
         # Inicializa um PaymentProcessor thread por banco.
         # Sua solução completa deverá funcionar corretamente com múltiplos PaymentProcessor threads para cada banco.
-        PaymentProcessor(_id=i, bank=bank).start()
+        for j in range(num_payment_processor):
+            PaymentProcessor(_id=j, bank=bank).start()
         
     # Enquanto o tempo total de simuação não for atingido:
     while t < total_time:

@@ -54,6 +54,7 @@ class TransactionGenerator(Thread):
             new_transaction = Transaction(i, origin, destination, amount, currency=Currency(destination_bank+1))
             with banks[self.bank._id].queue_lock:
                 banks[self.bank._id].transaction_queue.append(new_transaction)
+                banks[self.bank._id].item_in_queue.notify()
             i+=1
             time.sleep(0.2 * time_unit)
 

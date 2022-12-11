@@ -1,5 +1,5 @@
 import time
-from threading import Thread
+from threading import Thread, Condition, Lock
 
 from typing import Tuple
 from globals import banks
@@ -53,13 +53,15 @@ class PaymentProcessor(Thread):
         while True:
             try:
                 with banks[self.bank._id].queue_lock:
+                    while (len(queue) == 0):
+                        banks[self.bank._id].item_in_queue.wait() 
                     transaction = queue.pop(0)
-                # LOGGER.info(f"Transaction_queue do Banco {self.bank._id}: {queue}")
+                LOGGER.info(f"Transaction_queue do Banco {self.bank._id}: {queue}")
             except Exception as err:
                 LOGGER.error(f"Falha em PaymentProcessor.run(): {err}")
             else:
                 self.process_transaction(transaction)
-            time.sleep(3 * time_unit)  # Remova esse sleep após implementar sua solução!
+            #time.sleep(3 * time_unit)  # Remova esse sleep após implementar sua solução!
 
         LOGGER.info(f"O PaymentProcessor {self._id} do banco {self._bank_id} foi finalizado.")
 
