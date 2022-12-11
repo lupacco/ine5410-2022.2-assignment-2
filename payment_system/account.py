@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Tuple
 
 from utils.currency import Currency
 from utils.logger import LOGGER
@@ -51,8 +52,7 @@ class Account:
         pretty_overdraft_limit = f"{format(round(self.overdraft_limit/100), ',d')}.{self.overdraft_limit%100:02d} {self.currency.name}"
         LOGGER.info(f"Account::{{ _id={self._id}, _bank_id={self._bank_id}, balance={pretty_balance}, overdraft_limit={pretty_overdraft_limit} }}")
 
-
-    def deposit(self, amount: int) -> bool:
+    def deposit(self, amount: int) -> bool: 
         """
         Esse método deverá adicionar o valor `amount` passado como argumento ao saldo da conta bancária 
         (`balance`). Lembre-se que esse método pode ser chamado concorrentemente por múltiplos 
@@ -64,8 +64,7 @@ class Account:
         LOGGER.info(f"deposit({amount}) successful!")
         return True
 
-
-    def withdraw(self, amount: int) -> bool:
+    def withdraw(self, amount: int) -> Tuple[bool, bool]:
         """
         Esse método deverá retirar o valor `amount` especificado do saldo da conta bancária (`balance`).
         Deverá ser retornado um valor bool indicando se foi possível ou não realizar a retirada.
@@ -77,18 +76,17 @@ class Account:
         if self.balance >= amount:
             self.balance -= amount
             LOGGER.info(f"withdraw({amount}) successful!")
-            return True, "normal"
+            return (True, False)
         else:
             overdrafted_amount = abs(self.balance - amount)
-            #taxa cobrada pelo banco
-            bank_tax = amount*0.05
-            if self.overdraft_limit >= (overdrafted_amount + bank_tax):
-                self.balance -= amount
+            bank_tax = overdrafted_amount * 0.05
+            if self.overdraft_limit >= overdrafted_amount:
+                self.balance -= amount + bank_tax
                 LOGGER.info(f"withdraw({amount}) successful with overdraft!")
-                return True, "overdrafted"
+                return (True, True)
             else:
                 LOGGER.warning(f"withdraw({amount}) failed, no balance!")
-                return False
+                return (False, False)
 
 
 @dataclass

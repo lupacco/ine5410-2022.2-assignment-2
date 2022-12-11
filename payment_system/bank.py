@@ -61,7 +61,6 @@ class Bank():
         # TODO: IMPLEMENTE AS MODIFICAÇÕES, SE NECESSÁRIAS, NESTE MÉTODO!
 
         # Gera _id para a nova Account
-        self.number_of_accounts += 1 #incrementa contador de contas no banco
         acc_id = self.number_of_accounts
 
         # Cria instância da classe Account
@@ -69,6 +68,35 @@ class Bank():
   
         # Adiciona a Account criada na lista de contas do banco
         self.accounts.append(acc)
+        self.number_of_accounts += 1
+        
+    def deposit_to_reserve(self, currency: Currency, amount: float) -> None:
+        if currency == Currency.USD:
+            self.reserves.USD.deposit(amount)
+        elif currency == Currency.EUR:
+            self.reserves.EUR.deposit(amount)
+        elif currency == Currency.GBP:
+            self.reserves.GBP.deposit(amount)
+        elif currency == Currency.JPY:
+            self.reserves.JPY.deposit(amount)
+        elif currency == Currency.CHF:
+            self.reserves.CHF.deposit(amount)
+        else:
+            self.reserves.BRL.deposit(amount)
+
+    def withdraw_from_reserve(self, currency: Currency, amount: float) -> None:
+        if currency == Currency.USD:
+            self.reserves.USD.withdraw(amount)
+        elif currency == Currency.EUR:
+            self.reserves.EUR.withdraw(amount)
+        elif currency == Currency.GBP:
+            self.reserves.GBP.withdraw(amount)
+        elif currency == Currency.JPY:
+            self.reserves.JPY.withdraw(amount)
+        elif currency == Currency.CHF:
+            self.reserves.CHF.withdraw(amount)
+        else:
+            self.reserves.BRL.withdraw(amount)
 
     def get_all_acounts_balance(self, accounts):
         sum = 0

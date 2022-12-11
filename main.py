@@ -62,11 +62,12 @@ if __name__ == "__main__":
 
     #Inicializa contas dos bancos
     for bank in banks:
-        for i in range(99):
-            bank.accounts.append(bank.new_account(randint(100_00, 100_000_00), randint(0, 50_000_00)))
+        for i in range(101):
+            bank.new_account(randint(100_00, 100_000_00), randint(0, 50_000_00))
 
     # Inicializa gerador de transações e processadores de pagamentos para os Bancos Nacionais:
     for i, bank in enumerate(banks):
+        #if i > 0: break
         # Inicializa um TransactionGenerator thread por banco:
         TransactionGenerator(_id=i, bank=bank).start()
         # Inicializa um PaymentProcessor thread por banco.

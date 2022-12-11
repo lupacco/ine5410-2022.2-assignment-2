@@ -6,8 +6,9 @@ from globals import banks
 
 from globals import *
 from payment_system.bank import Bank
+from payment_system.account import Account
 from utils.transaction import Transaction, TransactionStatus
-from utils.currency import Currency
+from utils.currency import *
 from utils.logger import LOGGER
 
 
@@ -38,7 +39,6 @@ class PaymentProcessor(Thread):
         self._id  = _id
         self.bank = bank
 
-
     def run(self):
         """
         Esse método deve buscar Transactions na fila de transações do banco e processá-las 
@@ -53,8 +53,7 @@ class PaymentProcessor(Thread):
         while True:
             try:
                 transaction = queue.pop(0)
-
-                LOGGER.info(f"Transaction_queue do Banco {self.bank._id}: {queue}")
+                # LOGGER.info(f"Transaction_queue do Banco {self.bank._id}: {queue}")
             except Exception as err:
                 LOGGER.error(f"Falha em PaymentProcessor.run(): {err}")
             else:
@@ -63,62 +62,64 @@ class PaymentProcessor(Thread):
 
         LOGGER.info(f"O PaymentProcessor {self._id} do banco {self._bank_id} foi finalizado.")
 
-    def new_transfer(self, origin: Tuple[int, int], destination: Tuple[int, int], amount: int, currency: Currency) -> None:
-        #identificador de banco origem -> origin[0]
+    def new_transfer(self, origin: Tuple[int, int], destination: Tuple[int, int], amount: int) -> None:
+        # Get banks id
         origin_bank_id = origin[0]
-        #identificador de banco destion -> destination[0]
         destination_bank_id = destination[0]
-        # identificador da conta origem -> origin[1]
-        origin_account = banks[origin_bank_id].accounts[origin[1]]
-        #resgata conta destino
-        destination_account = banks[destination_bank_id].accounts[destination[1]]
-
-        #se for possível fazer a transferência/saque
-        withdraw_requisition = origin_account.withdraw(amount)
-        print(withdraw_requisition)
-
-        if(withdraw_requisition[0]):
-            #Em caso de ser uma transferência Nacional
-            if(origin_bank_id == destination_bank_id):
-                    #se for com cheque especial
-                    if(withdraw_requisition[1] == "overdrafted"):
-                        #taxa cobrada pelo banco
-                        bank_tax = amount*0.05
-                        #cobrança da taxa destino (retirado da conta origem)
-                        origin_account.withdraw(bank_tax)
-                        origin_bank = banks[origin_bank_id]
-                        #incremento dos lucros acumulados do banco
-                        origin_bank.total_profit += bank_tax
-                        #deposito da taxa na conta do banco
-                        origin_bank.reserves.currency.deposit(bank_tax)
-                    #deposita quantia na conta destino
-                    destination_account.deposit(amount)
-            #Em caso de transferência Internacional
-            else:
-                bank_tax = amount*0.01
-                if(withdraw_requisition[1] == "overdrafted"):
-                    bank_tax = amount*0.06
-                    origin_account.withdraw(bank_tax)
-                #deposita na conta especial da currency origem
-                origin_bank = banks[origin_bank_id]
-                origin_bank.total_profit += bank_tax
-                origin_bank.reserves.currency.deposit(amount + bank_tax)
-                #converte quantia
-                destination_currency = destination_account.currency
-                converted_amount = currency.get_exchange_rate(currency, destination_currency)*amount
-                #faz o saque na conta especial da currency destino
-                origin_bank.reserves.destination_currency.withdraw(converted_amount)
-                
-                #depositando na conta destino
-                destination_account.deposit(converted_amount)
-            #incrementa operações realizadas pelo banco
-            origin_bank.released_operations += 1
-
-
-                
-                
         
+        # Get accounts id
+        origin_account_id = origin[1]
+        destination_account_id = destination[1]
+        
+        # Get banks objects
+        origin_bank = banks[origin_bank_id]
+        destination_bank = banks[destination_bank_id]
+        
+        # Get account objects
+        origin_account = origin_bank.accounts[origin_account_id]
+        destination_account = destination_bank.accounts[destination_account_id]
+        
+        # Define as currencies
+        origin_currency = origin_bank.currency
+        destination_currency = destination_bank.currency
 
+        #Em caso de ser uma transferência Nacional
+        if(origin_bank_id == destination_bank_id):
+            successful_transaction, special_check_transaction = origin_account.withdraw(amount)
+            if successful_transaction:
+                if special_check_transaction:
+                    bank_tax = amount * 0.05
+                    origin_bank.total_profit += bank_tax
+                    origin_bank.deposit_to_reserve(origin_currency, bank_tax)
+                    
+                # Deposita quantia na conta destino
+                destination_account.deposit(amount)
+                
+                origin_bank.released_operations += 1
+        
+        #Em caso de transferência Internacional
+        else:          
+            # Withdraw da origem
+            local_currency_amount = 1.01 * amount * get_exchange_rate(origin_bank.currency, destination_bank.currency)
+            successful_transaction, special_check_transaction = origin_account.withdraw(local_currency_amount)
+            
+            if successful_transaction:
+                # Deposito na conta do banco da moeda origem
+                if special_check_transaction:
+                    bank_tax = local_currency_amount * 0.05
+                    origin_bank.total_profit += bank_tax
+                    origin_bank.deposit_to_reserve(origin_currency, local_currency_amount + bank_tax)
+                else:
+                    origin_bank.deposit_to_reserve(origin_currency, local_currency_amount)
+
+                # Saque na conta do banco da moeda destino
+                origin_bank.withdraw_from_reserve(destination_currency, amount)
+                
+                # Depositando na conta destino
+                destination_account.deposit(amount)
+                
+                origin_bank.released_operations += 1
+            
     def process_transaction(self, transaction: Transaction) -> TransactionStatus:
         """
         Esse método deverá processar as transações bancárias do banco ao qual foi designado.
@@ -129,11 +130,10 @@ class PaymentProcessor(Thread):
         """
         # TODO: IMPLEMENTE/MODIFIQUE O CÓDIGO NECESSÁRIO ABAIXO !
 
-        
-
         LOGGER.info(f"PaymentProcessor {self._id} do Banco {self.bank._id} iniciando processamento da Transaction {transaction._id}!")
-
-        self.new_transfer(transaction.origin, transaction.destination, transaction.currency)
+        
+        # LOGGER.info(f"CURRENCY: {transaction.currency.value}.")
+        self.new_transfer(transaction.origin, transaction.destination, transaction.amount)
         
         # NÃO REMOVA ESSE SLEEP!
         # Ele simula uma latência de processamento para a transação.
