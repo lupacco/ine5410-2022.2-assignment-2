@@ -88,6 +88,10 @@ class PaymentProcessor(Thread):
         
         #Em caso de ser uma transferência Nacional
         if(origin_bank_id == destination_bank_id):
+            # Contador de transferências nacionais
+            with origin_bank.national_operations_count_lock:
+                origin_bank.national_operations_count += 1
+                    
             successful_transaction, overdraft_tax = origin_account.withdraw(amount)
             if successful_transaction:
                 if overdraft_tax > 0:
@@ -97,15 +101,16 @@ class PaymentProcessor(Thread):
                     
                 # Deposita quantia na conta destino
                 destination_account.deposit(amount)
-                
-                with origin_bank.national_operations_count_lock:
-                    origin_bank.national_operations_count += 1
                 return True
             else:
                 return False
         
         #Em caso de transferência Internacional
-        else:          
+        else:
+            # Contador de transferências internacionais
+            with origin_bank.international_operations_count_lock:
+                origin_bank.international_operations_count += 1
+                      
             # Withdraw da origem
             converted_amount = int(amount * get_exchange_rate(destination_bank.currency, origin_bank.currency))
             international_tax = int(0.01 * converted_amount)
@@ -124,10 +129,7 @@ class PaymentProcessor(Thread):
                 origin_bank.withdraw_from_reserve(destination_currency, amount)
                 
                 # Depositando na conta destino
-                destination_account.deposit(amount)
-                
-                with origin_bank.international_operations_count_lock:
-                    origin_bank.international_operations_count += 1
+                destination_account.deposit(amount)     
                 return True
             else:
                 return False
@@ -154,4 +156,8 @@ class PaymentProcessor(Thread):
             transaction.set_status(TransactionStatus.SUCCESSFUL)
         else: 
             transaction.set_status(TransactionStatus.FAILED)
+            
+        with self.bank.total_operation_time_lock:
+            self.bank.total_operation_time += transaction.get_processing_time().total_seconds()           
+            
         return transaction.status

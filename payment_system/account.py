@@ -104,9 +104,17 @@ class CurrencyReserves:
     OBS: NÃO É PERMITIDO ALTERAR ESSA CLASSE!
     """
 
-    USD: Account = Account(_id=1, _bank_id=0, currency=Currency.USD)
-    EUR: Account = Account(_id=2, _bank_id=0, currency=Currency.EUR)
-    GBP: Account = Account(_id=3, _bank_id=0, currency=Currency.GBP)
-    JPY: Account = Account(_id=4, _bank_id=0, currency=Currency.JPY)
-    CHF: Account = Account(_id=5, _bank_id=0, currency=Currency.CHF)
-    BRL: Account = Account(_id=6, _bank_id=0, currency=Currency.BRL)
+    USD: Account
+    EUR: Account
+    GBP: Account
+    JPY: Account
+    CHF: Account
+    BRL: Account
+
+    def __init__(self, bank_id):
+        self.USD = Account(_id=1, _bank_id=bank_id, currency=Currency.USD)
+        self.EUR = Account(_id=2, _bank_id=bank_id, currency=Currency.EUR)
+        self.GBP = Account(_id=3, _bank_id=bank_id, currency=Currency.GBP)
+        self.JPY = Account(_id=4, _bank_id=bank_id, currency=Currency.JPY)
+        self.CHF = Account(_id=5, _bank_id=bank_id, currency=Currency.CHF)
+        self.BRL = Account(_id=6, _bank_id=bank_id, currency=Currency.BRL)

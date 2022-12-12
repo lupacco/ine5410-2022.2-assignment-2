@@ -45,7 +45,7 @@ class Bank():
     def __init__(self, _id: int, currency: Currency):
         self._id                = _id
         self.currency           = currency
-        self.reserves           = CurrencyReserves()
+        self.reserves           = CurrencyReserves(_id)
         self.operating          = False
         self.accounts           = []
         self.number_of_accounts = 0  #Contagem de contas registradas no banco
@@ -56,6 +56,9 @@ class Bank():
         
         self.national_operations_count = 0  # Contagem de operações nacionais realizadas pelo banco
         self.national_operations_count_lock = Lock()
+        
+        self.total_operation_time = 0
+        self.total_operation_time_lock = Lock()
         
         self.international_operations_count = 0  # Contagem de operações internacionais realizadas pelo banco
         self.international_operations_count_lock = Lock()
@@ -129,17 +132,21 @@ class Bank():
         5. Lucro do banco: taxas de câmbio acumuladas + juros de cheque especial acumulados
         """
         # TODO: IMPLEMENTE AS MODIFICAÇÕES, SE NECESSÁRIAS, NESTE MÉTODO!
+        tempo_medio = self.total_operation_time / (self.national_operations_count + self.international_operations_count)
         info_message = f"Estatísticas do Banco Nacional {self._id}:\n" \
-                       f"Saldos:\n" \
-                       f" -> USD: {self.reserves.USD.balance}\n" \
-                       f" -> EUR: {self.reserves.EUR.balance}\n" \
-                       f" -> GBP: {self.reserves.GBP.balance}\n" \
-                       f" -> JPY: {self.reserves.JPY.balance}\n" \
-                       f" -> CHF: {self.reserves.CHF.balance}\n" \
-                       f" -> BRL: {self.reserves.BRL.balance}\n" \
-                       f"Transferências nacionais realizadas: {self.national_operations_count}\n" \
+                       f"Saldos das reservas:\n"  \
+                       f"  -> Reserva de USD:                      {self.reserves.USD.balance}\n" \
+                       f"  -> Reserva de EUR:                      {self.reserves.EUR.balance}\n" \
+                       f"  -> Reserva de GBP:                      {self.reserves.GBP.balance}\n" \
+                       f"  -> Reserva de JYP:                      {self.reserves.JPY.balance}\n" \
+                       f"  -> Reserva de CHF:                      {self.reserves.CHF.balance}\n" \
+                       f"  -> Reserva de BRL:                      {self.reserves.BRL.balance}\n" \
+                       f"Transferências nacionais realizadas:      {self.national_operations_count}\n" \
                        f"Transferências internacionais realizadas: {self.international_operations_count}\n" \
-                       f"Contas registradas: {self.number_of_accounts}\n" \
-                       f"Saldo total dos clientes: {self.get_all_acounts_balance()}\n" \
-                       f"Lucro acumulado: {self.get_total_profit()}\n"         
+                       f"Transferências não processadas:           {len(self.transaction_queue)}\n" \
+                       f"Tempo médio de espera das transferências: {tempo_medio:.2f} s\n" \
+                       f"Contas registradas:                       {self.number_of_accounts}\n" \
+                       f"Saldo total dos clientes:                 {self.get_all_acounts_balance()}\n" \
+                       f"Lucro acumulado:                          {self.get_total_profit()}\n"         
         LOGGER.info(info_message)
+

@@ -8,6 +8,8 @@ from payment_system.payment_processor import PaymentProcessor
 from payment_system.transaction_generator import TransactionGenerator
 from utils.currency import Currency
 from utils.logger import CH, LOGGER
+from datetime import datetime, timedelta
+
 
 if __name__ == "__main__":
     # Verificação de compatibilidade da versão do python:
@@ -104,3 +106,18 @@ if __name__ == "__main__":
     # Informações sobre a simulação
     for bank in banks:
         bank.info()
+        
+    # Informações gerais da simulação
+    processed_operations = 0
+    unprocessed_operations = 0
+    total_time = 0
+    for bank in banks:
+        processed_operations += bank.national_operations_count + bank.international_operations_count
+        unprocessed_operations += len(bank.transaction_queue)
+        total_time += bank.total_operation_time
+    tempo_medio = total_time / processed_operations
+    info_message = f"Estatísticas gerais da simulação (todos os bancos):\n" \
+                   f"Transferências processadas:               {processed_operations}\n" \
+                   f"Transferências não processadas:           {unprocessed_operations}\n" \
+                   f"Tempo médio de espera das transferências: {tempo_medio:.2f} s\n"    
+    LOGGER.info(info_message)
