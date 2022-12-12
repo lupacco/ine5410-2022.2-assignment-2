@@ -57,7 +57,8 @@ class TransactionGenerator(Thread):
                 self.bank.item_in_queue.notify()
             i+=1
             time.sleep(0.2 * time_unit)
-            
+        
+        # Após o o banco fechar, Libera todas as threads aguardando a condição
         with self.bank.queue_lock:
             self.bank.item_in_queue.notify_all()
         

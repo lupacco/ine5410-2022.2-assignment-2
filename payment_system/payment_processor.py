@@ -50,13 +50,13 @@ class PaymentProcessor(Thread):
         # TODO: IMPLEMENTE/MODIFIQUE O CÓDIGO NECESSÁRIO ABAIXO !
 
         LOGGER.info(f"Inicializado o PaymentProcessor {self._id} do Banco {self.bank._id}!")
-        queue = banks[self.bank._id].transaction_queue
+        queue = self.bank.transaction_queue
 
         while self.bank.operating:
             try:
-                with banks[self.bank._id].queue_lock:
+                with self.bank.queue_lock:
                     while (len(queue) == 0 and self.bank.operating):
-                        banks[self.bank._id].item_in_queue.wait()
+                        self.bank.item_in_queue.wait()
                     if not self.bank.operating:
                         break
                     transaction = queue.pop(0)
