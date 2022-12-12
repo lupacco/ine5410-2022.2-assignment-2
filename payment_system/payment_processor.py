@@ -32,6 +32,8 @@ class PaymentProcessor(Thread):
         Inicia thread to PaymentProcessor
     process_transaction(transaction: Transaction) -> TransactionStatus:
         Processa uma transação bancária.
+    transfer(origin: Tuple[int, int], destination: Tuple[int, int], amount: int) -> bool
+        Realiza a lógica da transferência.
     """
 
     def __init__(self, _id: int, bank: Bank):

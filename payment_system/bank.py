@@ -28,15 +28,41 @@ class Bank():
         Booleano que indica se o banco está em funcionamento ou não.
     accounts : List[Account]
         Lista contendo as contas bancárias dos clientes do banco.
+    number_of_accounts: int
+        Quantidade de contas de clientes no banco.
     transaction_queue : Queue[Transaction]
         Fila FIFO contendo as transações bancárias pendentes que ainda serão processadas.
-
+    queue_lock: Lock
+        Lock para garantir exclusão mútua da queue.
+    item_in_queue: Condition
+        Condition para indicar se existe algum item na queue.
+    national_operations_count: int
+        Contador de transferências nacionais processadas.
+    national_operations_count_lock: Lock
+        Lock para garantir exclusão mútua do contador de transferências nacionais processadas.
+    international_operations_count: int
+        Contador de transferências nacionais processadas.
+    international_operations_count_lock: Lock
+        Lock para garantir exclusão mútua do contador de transferências internacionais processadas.
+    total_operation_time: int
+        Contador de tempo de espera das transferências processadas.
+    total_operation_time_lock: Lock
+        Lock para garantir exclusão mútua do contador de tempo de espera das transferências processadas.
+    total_profit: int
+        Contador do lucro do banco.
+    total_profit_lock: Lock
+        Lock para garantir exclusão mútua do contador do lucro do banco.
+ 
     Métodos
     -------
     new_account(balance: int = 0, overdraft_limit: int = 0) -> None:
         Cria uma nova conta bancária (Account) no banco.
-    new_transfer(origin: Tuple[int, int], destination: Tuple[int, int], amount: int, currency: Currency) -> None:
-        Cria uma nova transação bancária.
+    deposit_to_reserve(self, currency: Currency, amount: int) -> None:
+        Chama o método deposit para a reserva da currency passada como argumento.
+    withdraw_from_reserve(self, currency: Currency, amount: int) -> None:
+        Chama o método withdraw para a reserva da currency passada como argumento.
+    get_all_acounts_balance() -> int:
+        Retorna a soma do saldo de todas as contas de clientes do banco.
     info() -> None:
         Printa informações e estatísticas sobre o funcionamento do banco.
     
@@ -48,22 +74,22 @@ class Bank():
         self.reserves           = CurrencyReserves(_id)
         self.operating          = False
         self.accounts           = []
-        self.number_of_accounts = 0  #Contagem de contas registradas no banco
+        self.number_of_accounts = 0
         
         self.transaction_queue  = []
         self.queue_lock = Lock()
         self.item_in_queue = Condition(self.queue_lock)
         
-        self.national_operations_count = 0  # Contagem de operações nacionais realizadas pelo banco
+        self.national_operations_count = 0
         self.national_operations_count_lock = Lock()
+        
+        self.international_operations_count = 0
+        self.international_operations_count_lock = Lock()
         
         self.total_operation_time = 0
         self.total_operation_time_lock = Lock()
         
-        self.international_operations_count = 0  # Contagem de operações internacionais realizadas pelo banco
-        self.international_operations_count_lock = Lock()
-        
-        self.total_profit = 0  # Lucro acumulado pelo banco
+        self.total_profit = 0
         self.total_profit_lock = Lock()
 
     def new_account(self, balance: int = 0, overdraft_limit: int = 0) -> None:
@@ -119,9 +145,6 @@ class Bank():
 
         return sum
 
-    def get_total_profit(self):
-        return self.total_profit
-
     def info(self) -> None:
         """
         Essa função deverá printar os seguintes dados utilizando o LOGGER fornecido:
@@ -155,6 +178,6 @@ class Bank():
                        f"Outras informações:\n"  \
                        f"  -> Contas registradas:                         {self.number_of_accounts}\n" \
                        f"  -> Saldo total dos clientes:                   {format_money(self.get_all_acounts_balance(), self.currency)}\n" \
-                       f"  -> Lucro acumulado pelo banco:                 {format_money(self.get_total_profit(), self.currency)}\n\n\n"         
+                       f"  -> Lucro acumulado pelo banco:                 {format_money(self.total_profit, self.currency)}\n\n\n"         
         LOGGER.info(info_message)
 
