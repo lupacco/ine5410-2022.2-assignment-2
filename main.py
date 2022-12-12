@@ -62,7 +62,7 @@ if __name__ == "__main__":
 
     # Inicializa contas dos bancos
     for bank in banks:
-        for i in range(101):
+        for i in range(100):
             bank.new_account(randint(100_00, 100_000_00), randint(0, 50_000_00))
             
     # Armazena as threads
@@ -101,3 +101,7 @@ if __name__ == "__main__":
         
     # Termina simulação. Após esse print somente dados devem ser printados no console.
     LOGGER.info(f"A simulação chegou ao fim!\n")
+    
+    # Informações sobre a simulação
+    for bank in banks:
+        bank.info()

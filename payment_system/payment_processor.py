@@ -58,7 +58,7 @@ class PaymentProcessor(Thread):
                     if not self.bank.operating:
                         break
                     transaction = queue.pop(0)
-                LOGGER.info(f"Transaction_queue do Banco {self.bank._id}: {queue}")
+                LOGGER.info(f"Quantidade de transferências na Transaction_queue do Banco {self.bank._id}: {len(queue)}")
             except Exception as err:
                 LOGGER.error(f"Falha em PaymentProcessor.run(): {err}")
             else:
@@ -88,17 +88,18 @@ class PaymentProcessor(Thread):
         
         #Em caso de ser uma transferência Nacional
         if(origin_bank_id == destination_bank_id):
-            successful_transaction, special_check_transaction = origin_account.withdraw(amount)
+            successful_transaction, overdraft_tax = origin_account.withdraw(amount)
             if successful_transaction:
-                if special_check_transaction:
-                    bank_tax = int(amount * 0.05)
-                    origin_bank.total_profit += bank_tax
-                    origin_bank.deposit_to_reserve(origin_currency, bank_tax)
+                if overdraft_tax > 0:
+                    with origin_bank.total_profit_lock:
+                        origin_bank.total_profit += overdraft_tax
+                    origin_bank.deposit_to_reserve(origin_currency, overdraft_tax)
                     
                 # Deposita quantia na conta destino
                 destination_account.deposit(amount)
                 
-                origin_bank.released_operations += 1
+                with origin_bank.national_operations_count_lock:
+                    origin_bank.national_operations_count += 1
                 return True
             else:
                 return False
@@ -106,25 +107,27 @@ class PaymentProcessor(Thread):
         #Em caso de transferência Internacional
         else:          
             # Withdraw da origem
-            local_currency_amount = int(1.01 * amount * get_exchange_rate(destination_bank.currency, origin_bank.currency))
-            successful_transaction, special_check_transaction = origin_account.withdraw(local_currency_amount)
+            converted_amount = int(amount * get_exchange_rate(destination_bank.currency, origin_bank.currency))
+            international_tax = int(0.01 * converted_amount)
+            local_currency_amount = converted_amount + international_tax
+            successful_transaction, overdraft_tax = origin_account.withdraw(local_currency_amount)
             
             if successful_transaction:
-                # Deposito na conta do banco da moeda origem
-                if special_check_transaction:
-                    bank_tax = int(local_currency_amount * 0.05)
-                    origin_bank.total_profit += bank_tax
-                    origin_bank.deposit_to_reserve(origin_currency, local_currency_amount + bank_tax)
-                else:
-                    origin_bank.deposit_to_reserve(origin_currency, local_currency_amount)
-
+                # Deposita na conta do banco da moeda origem. Se não utilizou cheque especial, overdraft_tax = 0
+                origin_bank.deposit_to_reserve(origin_currency, local_currency_amount + overdraft_tax)
+                    
+                # Registro do lucro do banco
+                with origin_bank.total_profit_lock:
+                    origin_bank.total_profit += international_tax + overdraft_tax
+                    
                 # Saque na conta do banco da moeda destino
                 origin_bank.withdraw_from_reserve(destination_currency, amount)
                 
                 # Depositando na conta destino
                 destination_account.deposit(amount)
                 
-                origin_bank.released_operations += 1
+                with origin_bank.international_operations_count_lock:
+                    origin_bank.international_operations_count += 1
                 return True
             else:
                 return False

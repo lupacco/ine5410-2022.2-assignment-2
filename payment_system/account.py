@@ -67,7 +67,7 @@ class Account:
         LOGGER.info(f"deposit({amount}) successful!")
         return True
 
-    def withdraw(self, amount: int) -> Tuple[bool, bool]:
+    def withdraw(self, amount: int) -> Tuple[bool, int]:
         """
         Esse método deverá retirar o valor `amount` especificado do saldo da conta bancária (`balance`).
         Deverá ser retornado um valor bool indicando se foi possível ou não realizar a retirada.
@@ -81,19 +81,19 @@ class Account:
             self.balance -= amount
             self.lock.release()
             LOGGER.info(f"withdraw({amount}) successful!")
-            return (True, False)
+            return (True, 0)
         else:
             overdrafted_amount = abs(self.balance - amount)
-            bank_tax = int(overdrafted_amount * 0.05)
+            overdraft_tax = int(overdrafted_amount * 0.05)
             if self.overdraft_limit >= overdrafted_amount:
-                self.balance -= amount + bank_tax
+                self.balance -= amount + overdraft_tax
                 self.lock.release()
                 LOGGER.info(f"withdraw({amount}) successful with overdraft!")
-                return (True, True)
+                return (True, overdraft_tax)
             else:
                 self.lock.release()
                 LOGGER.warning(f"withdraw({amount}) failed, no balance!")
-                return (False, False)
+                return (False, 0)
 
 
 @dataclass
