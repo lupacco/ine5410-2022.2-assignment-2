@@ -95,3 +95,26 @@ def get_exchange_rate(f: Currency, t: Currency) -> float:
             return 0.18
         elif t == Currency.BRL:
             return 1
+
+def format_money(amount: int, currency: Currency):
+    original_value = str(amount)
+    formated_value = ""
+    if len(original_value) == 1:
+        formated_value = "0,0" + original_value
+    elif len(original_value) == 2:
+        formated_value = "0," + original_value
+    else:
+        formated_value = "," + original_value[-2:]
+        count = 0
+        for i in range(-3, -1*len(original_value)-1, -1):
+            count += 1
+            formated_value = original_value[i] + formated_value
+            if count == 3:
+                formated_value = "." + formated_value
+                count = 0
+        if formated_value[0] == ".":
+            formated_value =formated_value[1:]
+    
+    formated_value = formated_value + " " + str(currency.name)
+    return formated_value
+    

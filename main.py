@@ -116,8 +116,8 @@ if __name__ == "__main__":
         unprocessed_operations += len(bank.transaction_queue)
         total_time += bank.total_operation_time
     tempo_medio = total_time / processed_operations
-    info_message = f"Estatísticas gerais da simulação (todos os bancos):\n" \
-                   f"Transferências processadas:               {processed_operations}\n" \
-                   f"Transferências não processadas:           {unprocessed_operations}\n" \
-                   f"Tempo médio de espera das transferências: {tempo_medio:.2f} s\n"    
+    info_message = f"Estatísticas gerais da simulação (todos os bancos):\n\n" \
+                   f"  -> Transferências processadas:                 {processed_operations}\n" \
+                   f"  -> Transferências não processadas:             {unprocessed_operations}\n" \
+                   f"  -> Tempo médio de espera das transferências:   {tempo_medio:.2f} s\n"    
     LOGGER.info(info_message)

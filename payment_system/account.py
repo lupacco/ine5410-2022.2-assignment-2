@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Tuple
 
-from utils.currency import Currency
+from utils.currency import Currency, format_money
 from utils.logger import LOGGER
 from threading import Lock
 
@@ -64,7 +64,7 @@ class Account:
 
         with self.lock:
             self.balance += amount
-        LOGGER.info(f"deposit({amount}) successful!")
+        LOGGER.info(f"deposit({format_money(amount, self.currency)}) successful!")
         return True
 
     def withdraw(self, amount: int) -> Tuple[bool, int]:
@@ -80,7 +80,7 @@ class Account:
         if self.balance >= amount:
             self.balance -= amount
             self.lock.release()
-            LOGGER.info(f"withdraw({amount}) successful!")
+            LOGGER.info(f"withdraw({format_money(amount, self.currency)}) successful!")
             return (True, 0)
         else:
             overdrafted_amount = abs(self.balance - amount)
@@ -88,11 +88,11 @@ class Account:
             if self.overdraft_limit >= overdrafted_amount:
                 self.balance -= amount + overdraft_tax
                 self.lock.release()
-                LOGGER.info(f"withdraw({amount}) successful with overdraft!")
+                LOGGER.info(f"withdraw({format_money(amount, self.currency)}) successful with overdraft!")
                 return (True, overdraft_tax)
             else:
                 self.lock.release()
-                LOGGER.warning(f"withdraw({amount}) failed, no balance!")
+                LOGGER.warning(f"withdraw({format_money(amount, self.currency)}) failed, no balance!")
                 return (False, 0)
 
 
