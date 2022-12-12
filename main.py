@@ -64,13 +64,12 @@ if __name__ == "__main__":
     for bank in banks:
         for i in range(100):
             bank.new_account(randint(100_00, 100_000_00), randint(0, 50_000_00))
-            
+                     
     # Armazena as threads
     threads_transaction_generator = []
     threads_payment_processor = []
 
     # Inicializa gerador de transações e processadores de pagamentos para os Bancos Nacionais:
-    num_payment_processor = 15
     for i, bank in enumerate(banks):
         # Inicializa um TransactionGenerator thread por banco:
         thread = TransactionGenerator(_id=i, bank=bank)
@@ -78,7 +77,7 @@ if __name__ == "__main__":
         threads_transaction_generator.append(thread)
         # Inicializa um PaymentProcessor thread por banco.
         # Sua solução completa deverá funcionar corretamente com múltiplos PaymentProcessor threads para cada banco.
-        for j in range(num_payment_processor):
+        for j in range(num_payment_processors): 
             thread = PaymentProcessor(_id=j, bank=bank)
             thread.start()
             threads_payment_processor.append(thread)

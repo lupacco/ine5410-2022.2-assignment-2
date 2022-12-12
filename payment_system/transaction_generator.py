@@ -47,9 +47,9 @@ class TransactionGenerator(Thread):
         self.bank.operating = True
         i = 0
         while self.bank.operating:
-            origin = (self.bank._id, randint(0, 1_00))
+            origin = (self.bank._id, randint(0, 99))
             destination_bank = randint(0, 5)
-            destination = (destination_bank, randint(0, 1_00))
+            destination = (destination_bank, randint(0, 99))
             amount = randint(1_00, 10_000_00)
             new_transaction = Transaction(i, origin, destination, amount, currency=Currency(destination_bank+1))
             with self.bank.queue_lock:

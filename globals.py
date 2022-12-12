@@ -9,3 +9,6 @@ total_time = 100
 
 # Unidade de tempo (quanto menor, mais rápida a simulação)
 time_unit = 0.1  # 0.1 = 100ms
+
+# Quantidade de threads de payment processor para cada banco
+num_payment_processors = 15
