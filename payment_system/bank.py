@@ -132,7 +132,13 @@ class Bank():
         5. Lucro do banco: taxas de câmbio acumuladas + juros de cheque especial acumulados
         """
         # TODO: IMPLEMENTE AS MODIFICAÇÕES, SE NECESSÁRIAS, NESTE MÉTODO!
-        tempo_medio = self.total_operation_time / (self.national_operations_count + self.international_operations_count)
+        
+        total_operations = self.national_operations_count + self.international_operations_count
+        if total_operations != 0:
+            tempo_medio = self.total_operation_time / total_operations
+        else:
+            tempo_medio = 0.0
+            
         info_message = f"Estatísticas do Banco Nacional {self._id}:\n\n" \
                        f"Saldos das reservas:\n"  \
                        f"  -> Reserva de USD:                             {format_money(self.reserves.USD.balance, Currency.USD)}\n" \

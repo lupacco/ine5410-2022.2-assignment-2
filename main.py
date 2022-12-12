@@ -22,6 +22,7 @@ if __name__ == "__main__":
     parser.add_argument("--time_unit", "-u", help="Valor da unidade de tempo de simulação")
     parser.add_argument("--total_time", "-t", help="Tempo total de simulação")
     parser.add_argument("--debug", "-d", help="Printar logs em nível DEBUG")
+    parser.add_argument("--processors", "-p", help="Número de payment processors")
     args = parser.parse_args()
     if args.time_unit:
         time_unit = float(args.time_unit)
@@ -29,6 +30,8 @@ if __name__ == "__main__":
         total_time = int(args.total_time)
     if args.debug:
         debug = True
+    if args.processors:
+        num_payment_processors = int(args.processors)
 
     # Configura logger
     if debug:
@@ -115,7 +118,12 @@ if __name__ == "__main__":
         processed_operations += bank.national_operations_count + bank.international_operations_count
         unprocessed_operations += len(bank.transaction_queue)
         total_time += bank.total_operation_time
-    tempo_medio = total_time / processed_operations
+        
+    if processed_operations != 0:
+        tempo_medio = total_time / processed_operations
+    else:
+        tempo_medio = 0.0
+        
     info_message = f"Estatísticas gerais da simulação (todos os bancos):\n\n" \
                    f"  -> Transferências processadas:                 {processed_operations}\n" \
                    f"  -> Transferências não processadas:             {unprocessed_operations}\n" \
